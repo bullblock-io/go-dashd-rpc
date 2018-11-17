@@ -46,20 +46,6 @@ func (r FutureGenerateResult) Receive() ([]*chainhash.Hash, error) {
 	return convertedResult, nil
 }
 
-// GenerateAsync returns an instance of a type that can be used to get
-// the result of the RPC at some future time by invoking the Receive function on
-// the returned instance.
-//
-// See Generate for the blocking version and more details.
-func (c *Client) GenerateAsync(numBlocks uint32) FutureGenerateResult {
-	cmd := btcjson.NewGenerateCmd(numBlocks)
-	return c.sendCmd(cmd)
-}
-
-// Generate generates numBlocks blocks and returns their hashes.
-func (c *Client) Generate(numBlocks uint32) ([]*chainhash.Hash, error) {
-	return c.GenerateAsync(numBlocks).Receive()
-}
 
 // FutureGetGenerateResult is a future promise to deliver the result of a
 // GetGenerateAsync RPC invocation (or an applicable error).
