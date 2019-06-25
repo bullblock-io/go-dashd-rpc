@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/bitlum/go-dashd-rpc/btcjson"
-	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
@@ -791,20 +790,20 @@ type FutureAddMultisigAddressResult chan *Response
 // Receive waits for the response promised by the future and returns the
 // multisignature address that requires the specified number of signatures for
 // the provided addresses.
-func (r FutureAddMultisigAddressResult) Receive() (btcutil.Address, error) {
+func (r FutureAddMultisigAddressResult) Receive() (string, error) {
 	res, err := ReceiveFuture(r)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	// Unmarshal result as a string.
 	var addr string
 	err = json.Unmarshal(res, &addr)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return btcutil.DecodeAddress(addr, &chaincfg.MainNetParams)
+	return addr, nil
 }
 
 // AddMultisigAddressAsync returns an instance of a type that can be used to get
@@ -824,7 +823,7 @@ func (c *Client) AddMultisigAddressAsync(requiredSigs int, addresses []btcutil.A
 
 // AddMultisigAddress adds a multisignature address that requires the specified
 // number of signatures for the provided addresses to the wallet.
-func (c *Client) AddMultisigAddress(requiredSigs int, addresses []btcutil.Address, account string) (btcutil.Address, error) {
+func (c *Client) AddMultisigAddress(requiredSigs int, addresses []btcutil.Address, account string) (string, error) {
 	return c.AddMultisigAddressAsync(requiredSigs, addresses,
 		account).Receive()
 }
@@ -890,20 +889,20 @@ type FutureGetNewAddressResult chan *Response
 
 // Receive waits for the response promised by the future and returns a new
 // address.
-func (r FutureGetNewAddressResult) Receive() (btcutil.Address, error) {
+func (r FutureGetNewAddressResult) Receive() (string, error) {
 	res, err := ReceiveFuture(r)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	// Unmarshal result as a string.
 	var addr string
 	err = json.Unmarshal(res, &addr)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return btcutil.DecodeAddress(addr, &chaincfg.MainNetParams)
+	return addr, nil
 }
 
 // GetNewAddressAsync returns an instance of a type that can be used to get the
@@ -917,7 +916,7 @@ func (c *Client) GetNewAddressAsync(account string) FutureGetNewAddressResult {
 }
 
 // GetNewAddress returns a new address.
-func (c *Client) GetNewAddress(account string) (btcutil.Address, error) {
+func (c *Client) GetNewAddress(account string) (string, error) {
 	return c.GetNewAddressAsync(account).Receive()
 }
 
@@ -928,20 +927,20 @@ type FutureGetRawChangeAddressResult chan *Response
 // Receive waits for the response promised by the future and returns a new
 // address for receiving change that will be associated with the provided
 // account.  Note that this is only for raw transactions and NOT for normal use.
-func (r FutureGetRawChangeAddressResult) Receive() (btcutil.Address, error) {
+func (r FutureGetRawChangeAddressResult) Receive() (string, error) {
 	res, err := ReceiveFuture(r)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	// Unmarshal result as a string.
 	var addr string
 	err = json.Unmarshal(res, &addr)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return btcutil.DecodeAddress(addr, &chaincfg.MainNetParams)
+	return addr, nil
 }
 
 // GetRawChangeAddressAsync returns an instance of a type that can be used to
@@ -957,7 +956,7 @@ func (c *Client) GetRawChangeAddressAsync(account string) FutureGetRawChangeAddr
 // GetRawChangeAddress returns a new address for receiving change that will be
 // associated with the provided account.  Note that this is only for raw
 // transactions and NOT for normal use.
-func (c *Client) GetRawChangeAddress(account string) (btcutil.Address, error) {
+func (c *Client) GetRawChangeAddress(account string) (string, error) {
 	return c.GetRawChangeAddressAsync(account).Receive()
 }
 
@@ -967,20 +966,20 @@ type FutureGetAccountAddressResult chan *Response
 
 // Receive waits for the response promised by the future and returns the current
 // Bitcoin address for receiving payments to the specified account.
-func (r FutureGetAccountAddressResult) Receive() (btcutil.Address, error) {
+func (r FutureGetAccountAddressResult) Receive() (string, error) {
 	res, err := ReceiveFuture(r)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	// Unmarshal result as a string.
 	var addr string
 	err = json.Unmarshal(res, &addr)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return btcutil.DecodeAddress(addr, &chaincfg.MainNetParams)
+	return addr, nil
 }
 
 // GetAccountAddressAsync returns an instance of a type that can be used to get
@@ -995,7 +994,7 @@ func (c *Client) GetAccountAddressAsync(account string) FutureGetAccountAddressR
 
 // GetAccountAddress returns the current Bitcoin address for receiving payments
 // to the specified account.
-func (c *Client) GetAccountAddress(account string) (btcutil.Address, error) {
+func (c *Client) GetAccountAddress(account string) (string, error) {
 	return c.GetAccountAddressAsync(account).Receive()
 }
 
@@ -1070,7 +1069,7 @@ type FutureGetAddressesByAccountResult chan *Response
 
 // Receive waits for the response promised by the future and returns the list of
 // addresses associated with the passed account.
-func (r FutureGetAddressesByAccountResult) Receive() ([]btcutil.Address, error) {
+func (r FutureGetAddressesByAccountResult) Receive() ([]string, error) {
 	res, err := ReceiveFuture(r)
 	if err != nil {
 		return nil, err
@@ -1083,17 +1082,7 @@ func (r FutureGetAddressesByAccountResult) Receive() ([]btcutil.Address, error) 
 		return nil, err
 	}
 
-	addrs := make([]btcutil.Address, 0, len(addrStrings))
-	for _, addrStr := range addrStrings {
-		addr, err := btcutil.DecodeAddress(addrStr,
-			&chaincfg.MainNetParams)
-		if err != nil {
-			return nil, err
-		}
-		addrs = append(addrs, addr)
-	}
-
-	return addrs, nil
+	return addrStrings, nil
 }
 
 // GetAddressesByAccountAsync returns an instance of a type that can be used to
@@ -1108,7 +1097,7 @@ func (c *Client) GetAddressesByAccountAsync(account string) FutureGetAddressesBy
 
 // GetAddressesByAccount returns the list of addresses associated with the
 // passed account.
-func (c *Client) GetAddressesByAccount(account string) ([]btcutil.Address, error) {
+func (c *Client) GetAddressesByAccount(account string) ([]string, error) {
 	return c.GetAddressesByAccountAsync(account).Receive()
 }
 
